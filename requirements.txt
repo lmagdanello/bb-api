@@ -1,0 +1,4 @@
+fastapi==0.68.1
+uvicorn==0.15.0
+ansible==9.3.0
+python-dotenv==1.0.1

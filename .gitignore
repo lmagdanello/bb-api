@@ -1,0 +1,30 @@
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
+venv/
+env/
+.env
+
+# Editor specific
+.vscode/
+.idea/
+
+# Compiled files
+*.pyc
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# System files
+.DS_Store
+
+# Ignore generated directories and files
+/.mypy_cache/
+/.pytest_cache/
+coverage.xml
