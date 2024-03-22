@@ -37,8 +37,4 @@ class Group(BaseModel):
     """
     Represents a group of nodes or equipments.
     """
-    id: int
     name: str
-    nodes: List[Node] = []
-    equipments: List[Equipment] = []
-
