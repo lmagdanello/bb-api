@@ -19,21 +19,14 @@ ansible_inventory_path = os.getenv("ansible_inventory_path")
 loader = DataLoader()
 inventory = InventoryManager(loader=loader, sources=ansible_inventory_path)
 
-@router.get("/", response_model=List[Node])
+@router.get("/nodes")
 async def get_nodes():
     """
     Get all nodes from Ansible inventory.
     """
-    nodes = []
-    for group in inventory.list_groups():
-        hosts = inventory.groups[group].get_hosts()
+    nodes = set()
+    for profile in inventory.list_groups():
+        hosts = inventory.groups[profile].get_hosts()
         for node in hosts:
-            node = Node(
-                name = node.name,
-                group = group,
-                bmc = node.vars['bmc'],
-                network_interfaces = node.vars['network_interfaces']
-            )
-
-            nodes.append(node)
-    return nodes
+            nodes.add(node.name)
+    return list(nodes)

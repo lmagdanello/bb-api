@@ -7,14 +7,6 @@ This module defines the data models for our inventory API.
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 
-class Equipment(BaseModel):
-    """
-    Represents an equipment in the inventory.
-    """
-    id: int
-    name: str
-    type: str
-
 class NetworkInterface(BaseModel):
     """
     Represents a network interface of a node.
@@ -29,12 +21,12 @@ class Node(BaseModel):
     Represents a node in the inventory.
     """
     name: str
-    group: str
-    bmc: dict
+    profile: str
+    bmc: Optional[dict]
     network_interfaces: List[NetworkInterface]
 
-class Group(BaseModel):
+class Profile(BaseModel):
     """
-    Represents a group of nodes or equipments.
+    Represents a Equipment Profile in the inventory.
     """
     name: str
