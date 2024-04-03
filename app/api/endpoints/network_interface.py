@@ -2,8 +2,9 @@ from fastapi import APIRouter
 from typing import List
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
+from ansible.vars.manager import VariableManager
 
-from core.models import Profile, Node
+from core.models import Profile, Node, NetworkInterface
 
 # TEMPORARY!
 # Forcing ansible_inventory_path
@@ -18,39 +19,86 @@ router = APIRouter()
 ansible_inventory_path = os.getenv("ansible_inventory_path")
 loader = DataLoader()
 inventory = InventoryManager(loader=loader, sources=ansible_inventory_path)
+host_vars = VariableManager(loader=loader, inventory=inventory)
 
-@router.get("/network", response_model=List[Profile])
-async def get_networks():
+@router.get("/network", response_model=List[NetworkInterface])
+async def get_all_network():
     """
     Get all Networks from Ansible inventory.
     """
+    
+    network_interfaces = []
+    for node in inventory.get_hosts():
+        host = host_vars.get_vars(host=node)
+        for _, network_data in enumerate(host['network_interfaces']):
+            interface = network_data.get('interface', None)
+            ip4 = network_data.get('ip4', None)
+            mac = network_data.get('mac', None)
+            network = network_data.get('network', None)
+            
+            if mac is not None:
+                network_interface = NetworkInterface(interface=interface, ip4=ip4, mac=mac, network=network)
+            else:
+                network_interface = NetworkInterface(interface=interface, ip4=ip4, network=network)
 
-@router.get("/{network}/ip4", response_model=List[Node])
-async def get_network_ip():
-    """
-    Get all IP Addresses.
-    """
+            network_interfaces.append(network_interface)
 
-@router.get("/{network}/mac", response_model=List[Node])
-async def get_network_ips():
-    """
-    Get all MAC Addresses.
-    """
+    return network_interfaces
 
-@router.get("/{network}/{node}", response_model=List[Node])
-async def get_network_ips(node: str):
+@router.get("/network/{network}/ip4", response_model=List[str])
+async def get_network_ip(network: str):
     """
-    Get network information of a specific node.
+    Get all IP Addresses in a Network.
     """
+    ip_addresses = []
+    for node in inventory.get_hosts():
+        host = host_vars.get_vars(host=node)
+        for _, network_data in enumerate(host['network_interfaces']):
+            if network == network_data.get('network'):
+                ip4 = network_data.get('ip4')
+                if ip4:
+                    ip_addresses.append(ip4)
 
-@router.get("/{network}/{ip4}", response_model=List[Node])
-async def get_network_ips(ip4: str):
-    """
-    Get network information of a specific IP address.
-    """
+    return ip_addresses
 
-@router.get("/{network}/{mac}", response_model=List[Node])
-async def get_network_ips(mac: str):
+@router.get("/network/{network}/mac", response_model=List[str])
+async def get_network_ip(network: str):
     """
-    Get network information of a specific MAC address.
+    Get all MAC Addresses in a Network.
     """
+    mac_addresses = []
+    for node in inventory.get_hosts():
+        host = host_vars.get_vars(host=node)
+        for _, network_data in enumerate(host['network_interfaces']):
+            if network == network_data.get('network'):
+                mac = network_data.get('mac')
+                if mac:
+                    mac_addresses.append(mac)
+
+    return mac_addresses
+
+@router.get("/network/{network}/{node}", response_model=List[str])
+async def get_network_ip(network: str, node: str):
+    """
+    Get network information about a specific Node.
+    """
+    network_interfaces = []
+    for n in inventory.get_host(node):
+        # NOT WORKING YET!
+        # NEED IMPROVEMENT FOR get_vars
+        host = host_vars.get_vars(host=inventory.get_host(node))
+        for _, network_data in enumerate(host['network_interfaces']):
+            if network == network_data.get('network'):
+                interface = network_data.get('interface', None)
+                ip4 = network_data.get('ip4', None)
+                mac = network_data.get('mac', None)
+                network = network_data.get('network', None)
+                
+                if mac is not None:
+                    network_interface = NetworkInterface(interface=interface, ip4=ip4, mac=mac, network=network)
+                else:
+                    network_interface = NetworkInterface(interface=interface, ip4=ip4, network=network)
+
+                network_interfaces.append(network_interface)
+
+    return network_interfaces
