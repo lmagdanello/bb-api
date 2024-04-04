@@ -34,7 +34,7 @@ async def get_equipment_profiles():
 
     return equipment_profiles
 
-@router.get("/{profile}/{node}", response_model=List[Node])
+@router.get("/profiles/{profile}/{node}", response_model=List[Node])
 async def get_node_details(profile: str, node: str):
     """
     Get details of a specific node.
@@ -51,4 +51,5 @@ async def get_node_details(profile: str, node: str):
         )
                 
         target.append(host)
+
     return target
