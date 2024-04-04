@@ -34,14 +34,19 @@ async def get_equipment_profiles():
 
     return equipment_profiles
 
+@router.get("/profiles/{profile}", response_model=List[Profile])
+async def get_profile_details(profile: str):
+    """
+    Get Equipment Profile details from Ansible inventory.
+    """
+    
 @router.get("/profiles/{profile}/{node}", response_model=List[Node])
 async def get_node_details(profile: str, node: str):
     """
     Get details of a specific node.
     """
     target = []
-    hosts = inventory.groups[profile].get_hosts()
-    for host in hosts:
+    for host in inventory.groups[profile].get_hosts():
         if host.name == node:
             host = Node(
                 name = host.name,
@@ -50,6 +55,6 @@ async def get_node_details(profile: str, node: str):
                 network_interfaces = host.vars['network_interfaces']
         )
                 
-        target.append(host)
+            target.append(host)
 
     return target

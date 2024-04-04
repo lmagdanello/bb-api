@@ -51,7 +51,7 @@ async def get_node_network(node: str):
     """
     node_network_interfaces = []
     for n in inventory.get_hosts():
-        if str(n) == node:
+        if n.name == node:
             host = host_vars.get_vars(host=n)
             for _, network_data in enumerate(host['network_interfaces']):
                 interface = network_data.get('interface', None)
