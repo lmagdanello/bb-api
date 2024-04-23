@@ -1,3 +1,5 @@
+# Description: Equipment Profile API endpoints.
+
 from fastapi import APIRouter
 from typing import List
 from ansible.parsing.dataloader import DataLoader
@@ -10,7 +12,6 @@ from core.models import Profile, Node
 from dotenv import load_dotenv
 import os
 load_dotenv()
-
 
 router = APIRouter()
 
@@ -34,12 +35,23 @@ async def get_equipment_profiles():
 
     return equipment_profiles
 
-@router.get("/profiles/{profile}", response_model=List[Profile])
-async def get_profile_details(profile: str):
+@router.post("/profiles/{profile}")
+async def create_equipment_profile(profile: str):
     """
-    Get Equipment Profile details from Ansible inventory.
+    Create a new Equipment Profile.
     """
-    
+
+    inventory.add_group(profile)
+    return (f"Profile {profile} created.")
+
+@router.delete("/profiles/{profile}")
+async def delete_equipment_profile(profile: str):
+    """
+    Delete an Equipment Profile.
+    """
+    inventory.remove_group(profile)
+    return (f"Profile {profile} deleted.")
+
 @router.get("/profiles/{profile}/{node}", response_model=List[Node])
 async def get_node_details(profile: str, node: str):
     """
@@ -58,3 +70,22 @@ async def get_node_details(profile: str, node: str):
             target.append(host)
 
     return target
+
+@router.post("/profiles/{profile}/{node}")
+async def create_node_if_not_exists(profile: str, node: str):
+    """
+    Create a new Node inside an Equipment Profile.
+    """
+    equipment_profiles = await get_equipment_profiles()
+    if profile not in [p.name for p in equipment_profiles]:
+        await create_equipment_profile(profile)
+    inventory.add_host(host=node, group=profile)
+    return (f"Node {node} created in profile {profile}.")
+
+@router.delete("/profiles/{profile}/{node}")
+async def delete_node(profile: str, node: str):
+    """
+    Delete a Node from an Equipment Profile.
+    """
+    inventory.groups[profile].remove_host(node)
+    return (f"Node {node} deleted from profile {profile}.")
